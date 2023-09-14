@@ -1,2 +1,2 @@
-# rem_sleep
-assignment using git for bio 5660
+# REM Sleep
+This is the webpage displaying an assignment using git for bio5660. It uses a built in data set from ggplot2(msleep).
