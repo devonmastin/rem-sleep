@@ -5,8 +5,12 @@ date: "`r Sys.Date()`"
 output: 
   html_document:
     self-contained: TRUE
+    df_print: paged
     toc: TRUE
     toc.position: left
+editor_options:
+  markdown:
+    wrap: sentence
 ---
 
 ## Introduction
@@ -37,7 +41,7 @@ This is a long data frame with many many rows. Nobody wants to look at this. Let
 
 
 ## Visualization
-```{r sleep ggplot}
+```{r sleep ggplot, fig.align='center'}
 msleep%>%
   filter(!is.na(vore))%>%
   ggplot(aes(x = sleep_total, y = sleep_rem, colour = vore))+
@@ -53,7 +57,7 @@ msleep%>%
 Cool! 
 Lets look at another relationship...
 
-```{r 2ggplot}
+```{r 2ggplot, fig.align='center'}
 msleep%>%
   ggplot()+
   geom_point(mapping= aes(x=bodywt, y=sleep_total)) +
@@ -63,9 +67,13 @@ msleep%>%
     y = "Total Sleep (h)"
   )
 ```
+
 It doesn't look like there is much of a relationship here but let's filter out those larger values to get a better picture.
 
-```{r 2ggplot(2)}
+
+
+
+```{r 2ggplot(2), fig.align='center'}
 msleep%>%
   filter(bodywt < 2000)%>%
   ggplot()+
@@ -76,17 +84,31 @@ msleep%>%
     y = "Total Sleep (h)"
   )
 ```
+
 Maybe, but not really clear. Lets run a statistical analysis on the data (bringing back in those values that we filtered out).
+
+
 
 ```{r 1correlation coefficient}
 correlation <- cor(msleep$bodywt, msleep$sleep_total, method='pearson')
 print(paste("pearson correlation coefficient:", correlation))
 ```
+
 Ok, so our correlation between those two variables is pretty weak, which makes sense when we look at our graph. Let's look for a strong correlation somewhere else. 
 
+
+
+
+
 ## Correlation Matrix
+
+
+
 I am using a cool package called ggcorrplot which lets me make a visual correlation matrix, though when I tried this with all the data it was a huge mess. So I selected all the numeric data and ran the matrix.
-```{r correlation matrix}
+
+
+
+```{r correlation matrix, fig.align='center'}
 sleepdata <- msleep%>%
   select_if(is.numeric)
 
@@ -94,11 +116,18 @@ model.matrix(~0+., data=sleepdata)%>%
   cor(use="pairwise.complete.obs")%>%
   ggcorrplot(show.diag=FALSE, type="lower", lab=TRUE, lab_size =0.005)
 ```
+
 It shows an interesting relationship I wouldn't have thought to check for between sleep cycle time and brain weight.
+
+
 Lets look a little closer at this. 
 
+
+
+
+
 ## Brain Weight and Sleep Cycle Time
-```{r new relationship}
+```{r new relationship, fig.align='center'}
 ggplot(msleep, aes(x=brainwt, y=sleep_cycle, colour=vore))+
   geom_point()+
   labs(
@@ -107,6 +136,10 @@ ggplot(msleep, aes(x=brainwt, y=sleep_cycle, colour=vore))+
     y = "Sleep Cycle Time (h)"
   )
 ```
+
+
+
+
 
 ```{r}
 cleansleep <- msleep%>%
@@ -119,11 +152,15 @@ print(paste("correlation_coefficient:", correlation_coefficient))
 print(paste("P-value:", p_value))
 ```
 
+
+
+
+
 ## Order and Sleep
 
 Let's look at whether the order affects the total sleep time and REM sleep. There are a lot of orders so I am just going to look at Rodentia and Carnivora.
 
-```{r new data set}
+```{r new data set, fig.align='center'}
 sleep<-filter(msleep, order=='Rodentia'|order=='Carnivora')%>%
   filter(sleep_rem!="")
 ```
@@ -134,33 +171,50 @@ ggplot(sleep, aes(x=sleep_total, y=sleep_rem, colour=order))+
   theme_bw()
 ```
 
+
+
+
+
 Let's run a linear model to ask that question from above; is the effect of total sleep on REM sleep different for the orders Rodentia and Carnivora?
 
 ```{r sleep lm, echo = TRUE}
 model1<-lm(sleep_rem~sleep_total*order, data=sleep)
 summary(model1)
 ```
+
 We looked at whether total sleep, order, or the interaction between the two variables had a determining factor on how much REM sleep the animal got. When we look at our p-values it looks like total sleep did have a significant effect (shocker!), but order, and the combined effect of order and total sleep were not significant factors. 
 
-Let's a new data set where REM sleep is a function of total sleep or order, but total sleep and order are not dependent on eachother, then model it.
+
+
+
+Let's make a new data set where REM sleep is a function of total sleep or order, but total sleep and order are not dependent on eachother, then model it.
 
 ```{r, echo = TRUE}
 model2 <- lm(sleep_rem~sleep_total+order, data=sleep)
 summary(model2)
 ```
+
 This summary shows us that total sleep does create a significant difference in the amount of REM sleep, but that order of the animal was not a significant predictor of REM sleep.
+
+
+
 
 Now let's look at whether the two models are significantly different from each other.
 
 ```{r}
 anova(model1, model2)
 ```
+
+
 The two models are not significantly different from each other as evidenced by our high p-value, and with our first model we lose a degree of freedom, so the second model may be a better option.
+
+
+
  
 We want to add in a column that shows a predicted lm value based on the second model then visualize it.
 
 
-```{r, echo = TRUE}
+```{r, echo = TRUE, fig.align='center'}
 sleep$predlm<-predict(model2)
 ggplot(sleep, aes(x=sleep_total, y=sleep_rem, colour=order))+
   geom_point()+
@@ -168,3 +222,15 @@ ggplot(sleep, aes(x=sleep_total, y=sleep_rem, colour=order))+
 ```
 
 
+
+OK that was fun, go watch this video below before you go
+
+
+## Cute Video
+
+<iframe width="610"
+height="348"
+src="https://youtu.be/EPrTHSzUPFE?si=gTjwdEAJPcSuOn6u"
+date-external="1">
+
+</iframe>
